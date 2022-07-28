@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from typing import Union, List
 
 from fastapi.exceptions import HTTPException
@@ -21,11 +22,14 @@ class PInfo(DataSource):
         async with self.session as client:
             try:
                 response = await client.get(f'{self.api_url}?gtin={query}')
-                json_body = response.json()
-                resp_code = int(json_body['response']['code'])
-                if resp_code not in (200, ):
+                try:
+                    json_body = response.json()
+                    resp_code = int(json_body['response']['code'])
+                    if resp_code not in (200, ):
+                        return []
+                        # raise HTTPException(status_code=resp_code)
+                except JSONDecodeError:
                     return []
-                    # raise HTTPException(status_code=resp_code)
             except httpx.ReadTimeout:
                 return 'Unable to get data.'
             
