@@ -37,7 +37,8 @@ class PInfo(DataSource):
             result_set = [
                 src for src in articles if (src.get('specs_raw') \
                     and len([item for item in articles if item and item.get('specs_raw')]) > 1) \
-                        or src.get('description')
+                        or src.get('description') \
+                    and src.get("shop") != "amazon.de" ## drop data from amazon.de
                     ]
             flat_result_set = []
             for shop in result_set:
