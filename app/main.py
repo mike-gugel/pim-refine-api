@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 
+from starlette.middleware.base import BaseHTTPMiddleware
+
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
@@ -20,11 +22,16 @@ from app.models.user import UserRead, UserCreate, UserUpdate
 from app.routers.users import fastapi_users, auth_backend, google_oauth_client
 from app.routers import items
 from app.routers import schedules
+from app.utils.middleware import DisallowBlacklistedTokens
 
 
 app = FastAPI()
 app.state.database = database
 app.state.bdx_database = bdx_database
+
+
+dbt_middleware = DisallowBlacklistedTokens()
+app.add_middleware(BaseHTTPMiddleware, dispatch=dbt_middleware)
 
 
 # Set all CORS enabled origins

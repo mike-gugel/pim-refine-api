@@ -17,8 +17,8 @@ router = APIRouter()
 
 @router.get('/items/search')
 async def search(
+    user: UserDB = Depends(get_current_user()),
     query: str = Depends(get_eans),
-    user: UserDB = Depends(get_current_user),
     response_model=None,
     status_code=200
     ):
@@ -78,7 +78,7 @@ async def search(
 @router.get('/eprel/search')
 async def search(
     query: str,
-    user: UserDB = Depends(get_current_user),
+    user: UserDB = Depends(get_current_user()),
     response_model=None,
     status_code=200
     ):
