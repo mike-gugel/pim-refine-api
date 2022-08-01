@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("/scheduler/", response_model = CurrentScheduledJobsResponse, tags=["scheduler"])
-async def get_scheduled_jobs(admin: User = Depends(get_current_admin)):
+async def get_scheduled_jobs(admin: User = Depends(get_current_admin())):
     """
     Will provide a list of currently Scheduled Tasks
     """
@@ -31,7 +31,7 @@ async def get_scheduled_jobs(admin: User = Depends(get_current_admin)):
 async def schedule_job(
     crontab_expression: str = '0 5 * * *',
     name = "crawlab_import",
-    admin: User = Depends(get_current_admin)
+    admin: User = Depends(get_current_admin())
     ):
     """
     Adds a New Job to a Schedule
@@ -52,7 +52,7 @@ async def schedule_job(
 
 
 @router.delete("/scheduler/", response_model = JobCreateDeleteResponse, tags=["scheduler"])
-async def remove_job(name="crawlab_import", admin: User = Depends(get_current_admin)):
+async def remove_job(name="crawlab_import", admin: User = Depends(get_current_admin())):
     """
     Removes a Job from a Schedule
     """
