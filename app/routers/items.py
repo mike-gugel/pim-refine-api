@@ -39,18 +39,26 @@ async def search(
             ) as crawlab_client:
             crawlab_results = await crawlab_client.search(query=ean)
         paw_results = await Paw().search(query=ean)
+        # Add pim identifiers to all data feeds
+        if pim_results:
+            pim_ids = {
+                "Variant_product": pim_results.get("Variant_product"),
+                "Base_product": pim_results.get("Base_product"),
+                "Material_group": pim_results.get("Material_group")
+            }
+        else:
+            pim_ids = {}
         response.append({
             'EAN': ean,
             'results': {
                 **{'internal_pim': pim_results},
-                **{'p_info': p_info_results},
-                **{'icecat': icecat_results},
-                **{'crawlab': crawlab_results},
-                **{'paw': paw_results},
-                **{'eprel': eprel_results}
+                **{'p_info': p_info_results and [{**pim_ids, **shop} for shop in p_info_results]},
+                **{'icecat': icecat_results and {**pim_ids, **icecat_results}},
+                **{'crawlab': crawlab_results and {**pim_ids, **crawlab_results}},
+                **{'paw': paw_results and {**pim_ids, **paw_results}},
+                **{'eprel': eprel_results and {**pim_ids, **eprel_results}}
                 }
             })
-    
     return response
 
 
