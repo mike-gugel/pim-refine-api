@@ -29,6 +29,7 @@ async def search(
             api_url = settings.P_INFO_API_URL,
             api_key = settings.P_INFO_API_KEY
             ).search(query=ean)
+        pi_error_msg = p_info_results.get('error')
         pim_results = await pim_client.search(query=ean)
         icecat_results = await Icecat().search(query=ean)
         eprel_id = icecat_results and icecat_results.get('EprelID')
@@ -52,7 +53,7 @@ async def search(
             'EAN': ean,
             'results': {
                 **{'internal_pim': pim_results},
-                **{'p_info': p_info_results and [{**pim_ids, **shop} for shop in p_info_results]},
+                **{'p_info': not pi_error_msg and p_info_results and [{**pim_ids, **shop} for shop in p_info_results] or pi_error_msg},
                 **{'icecat': icecat_results and {**pim_ids, **icecat_results}},
                 **{'crawlab': crawlab_results and {**pim_ids, **crawlab_results}},
                 **{'paw': paw_results and {**pim_ids, **paw_results}},
