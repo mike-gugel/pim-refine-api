@@ -5,22 +5,22 @@ services:
     build: .
     volumes:
       - .:/app
-    depends_on:
-      - db
-    environment:
-      POSTGRES_USER: products_comp
-      POSTGRES_SERVER: db
-      POSTGRES_PASSWORD: products_comp
-      BACKEND_CORS_ORIGINS: '["http://localhost"]'
+    # depends_on:
+    #   - db
+    # environment:
+    #   POSTGRES_USER: products_comp
+    #   POSTGRES_SERVER: db
+    #   POSTGRES_PASSWORD: products_comp
+    #   BACKEND_CORS_ORIGINS: '["http://localhost"]'
     ports:
       - "8000:8000"
     restart: always
-  db:
-    image: postgres
-    environment:
-      POSTGRES_USER: products_comp
-      POSTGRES_DB: products_comp
-      POSTGRES_PASSWORD: products_comp
-    ports:
-      - "5432:5432"
-    restart: always
+  # db:
+  #   image: postgres
+  #   environment:
+  #     POSTGRES_USER: products_comp
+  #     POSTGRES_DB: products_comp
+  #     POSTGRES_PASSWORD: products_comp
+  #   ports:
+  #     - "5432:5432"
+  #   restart: always

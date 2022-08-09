@@ -29,6 +29,8 @@ def get_current_admin():
 
 async def get_eans(query: str):
     query = re.findall(r'(\d+)', query)
+    # Pad old ean that are not up to 13 digits
+    query = [ean.zfill(13) if len(ean)>8 and len(ean)<13 else ean for ean in query]
     query_items_length = set(len(num) for num in query)
     if not query_items_length:
         raise HTTPException(
