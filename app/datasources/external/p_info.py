@@ -31,7 +31,7 @@ class PInfo(DataSource):
                 except JSONDecodeError:
                     return []
             except httpx.ReadTimeout:
-                return 'Unable to get data.'
+                return {'error': 'Unable to get data'}
             
             articles = json_body['articles']
             result_set = [
