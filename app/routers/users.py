@@ -1,26 +1,36 @@
+import uuid
+
 from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import JWTAuthentication
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport
+)
+from httpx_oauth.clients.google import GoogleOAuth2
 
+from app.db.users import User
 from app.core.config import settings
-from app.models.user import User, UserCreate, UserDB, UserUpdate
-from app.utils.dependencies import get_user_manager
+from app.db.managers import get_user_manager
+from app.utils.auth import JWTWithLogout
 
 
-
-jwt_authentication = JWTAuthentication(
-    secret=settings.SECRET_KEY,
-    lifetime_seconds=settings.ACCESS_TOKEN_LIFETIME,
-    tokenUrl="auth/jwt/login"
+google_oauth_client = GoogleOAuth2(
+    settings.GOOGLE_OAUTH_CLIENT_ID,
+    settings.GOOGLE_OAUTH_CLIENT_SECRET
     )
 
-fastapi_users = FastAPIUsers(
-    get_user_manager,
-    [jwt_authentication],
-    User,
-    UserCreate,
-    UserUpdate,
-    UserDB,
-    )
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
-def get_fastapi_users():
-    return fastapi_users
+
+def get_jwt_strategy() -> JWTWithLogout:
+    return JWTWithLogout(secret=settings.SECRET_KEY, lifetime_seconds=settings.ACCESS_TOKEN_LIFETIME)
+
+
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+
+current_active_user = fastapi_users.current_user(active=True)

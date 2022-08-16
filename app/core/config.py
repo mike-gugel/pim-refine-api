@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     DGE_USER: str
     DGE_PASSWORD: str
 
+    GOOGLE_OAUTH_CLIENT_ID: str
+    GOOGLE_OAUTH_CLIENT_SECRET: str
+
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

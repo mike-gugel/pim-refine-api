@@ -1,10 +1,11 @@
 from logging import exception
 from passlib.context import CryptContext
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_users.password import get_password_hash
+
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
@@ -16,16 +17,21 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from app.core.config import settings
 from app.db import database, bdx_database
-from app.utils.dependencies import get_user_manager
-from app.models.user import UserDB, UserModel, UserCreate
-from app.routers.users import fastapi_users, jwt_authentication
+# from app.utils.dependencies import get_user_manager
+from app.models.user import UserRead, UserCreate, UserUpdate
+from app.routers.users import fastapi_users, auth_backend, google_oauth_client
 from app.routers import items
 from app.routers import schedules
+from app.utils.middleware import DisallowBlacklistedTokens
 
 
 app = FastAPI()
 app.state.database = database
 app.state.bdx_database = bdx_database
+
+
+dbt_middleware = DisallowBlacklistedTokens()
+app.add_middleware(BaseHTTPMiddleware, dispatch=dbt_middleware)
 
 
 # Set all CORS enabled origins
@@ -102,17 +108,45 @@ async def shutdown() -> None:
 async def info():
     return {
         'api': settings.SERVER_NAME,
-        'version': '0.5a-pre',
+        'version': '0.6a-pre',
         'docs': '/docs',
         'openapi': '/openapi.json'
         }
 
 
-app.include_router(fastapi_users.get_auth_router(jwt_authentication), prefix="/auth/jwt", tags=["auth"])
-app.include_router(fastapi_users.get_register_router(), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_verify_router(), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_users_router(), prefix="/users", tags=["users"])
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_reset_password_router(),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_verify_router(UserRead),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
+)
+app.include_router(
+    fastapi_users.get_oauth_router(
+        google_oauth_client,
+        auth_backend,
+        settings.SECRET_KEY,
+        associate_by_email=True
+        ),
+    prefix="/auth/google",
+    tags=["auth"],
+)
 
 app.include_router(items.router, tags=["search"])
 app.include_router(schedules.router, tags=["scheduler"])

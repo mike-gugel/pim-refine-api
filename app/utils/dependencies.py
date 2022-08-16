@@ -1,20 +1,8 @@
 import re
 
-from fastapi import Depends, HTTPException, status
-from fastapi_users.db import OrmarUserDatabase
-
-from app.models.user import UserDB, UserModel
-from app.db.managers import UserManager
+from fastapi import HTTPException, status
 from app.datasources.internal.bdx_am import BdxAm
 
-
-
-def get_user_db():
-    yield OrmarUserDatabase(UserDB, UserModel)
-
-
-def get_user_manager(user_db: OrmarUserDatabase = Depends(get_user_db)):
-    yield UserManager(user_db)
 
 
 def get_current_user():

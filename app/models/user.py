@@ -1,27 +1,15 @@
-from fastapi_users import models
-from fastapi_users.db import OrmarBaseUserModel
+import uuid
 
-from app.db import metadata, database
-
-
-class UserModel(OrmarBaseUserModel):
-    class Meta:
-        tablename = "users"
-        metadata = metadata
-        database = database
+from fastapi_users import schemas
 
 
-class User(models.BaseUser):
+class UserRead(schemas.BaseUser[uuid.UUID]):
     pass
 
 
-class UserCreate(models.BaseUserCreate):
+class UserCreate(schemas.BaseUserCreate):
     pass
 
 
-class UserUpdate(models.BaseUserUpdate):
-    pass
-
-
-class UserDB(User, models.BaseUserDB):
+class UserUpdate(schemas.BaseUserUpdate):
     pass

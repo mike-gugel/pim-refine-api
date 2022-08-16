@@ -2,7 +2,7 @@ from fastapi import (APIRouter, Depends, HTTPException, status)
 from typing import List, Union
 
 from app.core.config import settings
-from app.models.user import UserDB
+from app.models.user import UserRead as UserDB
 from app.utils.dependencies import get_current_user, get_eans
 from app.datasources.internal.bdx_am import BdxAm
 from app.datasources.external.crawlab import Crawlab
@@ -17,8 +17,8 @@ router = APIRouter()
 
 @router.get('/items/search')
 async def search(
-    query: str = Depends(get_eans),
     user: UserDB = Depends(get_current_user()),
+    query: str = Depends(get_eans),
     response_model=None,
     status_code=200
     ):

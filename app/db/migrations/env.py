@@ -14,8 +14,9 @@ sys.path.append(os.getcwd())
 
 from app.core.config import settings
 from app.db import metadata
-from app.models.user import UserModel
+from app.db.users import User
 from app.models.item import IceCatItemInfoModel, CrawlabItemInfoModel, PawInfoModel
+from app.models.token import InvalidTokenModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
