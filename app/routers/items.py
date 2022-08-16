@@ -25,21 +25,7 @@ async def search(
     pim_client = BdxAm()
     response = list()
     for ean in query:
-        p_info_results = await PInfo(
-            api_url = settings.P_INFO_API_URL,
-            api_key = settings.P_INFO_API_KEY
-            ).search(query=ean)
-        pi_error_msg = p_info_results.get('error')
         pim_results = await pim_client.search(query=ean)
-        icecat_results = await Icecat().search(query=ean)
-        eprel_id = icecat_results and icecat_results.get('EprelID')
-        eprel_results = eprel_id and await EPREL().search(query=eprel_id) or None
-        async with Crawlab(
-            settings.CRAWLAB_API_URL,
-            settings.CRAWLAB_API_KEY
-            ) as crawlab_client:
-            crawlab_results = await crawlab_client.search(query=ean)
-        paw_results = await Paw().search(query=ean)
         # Add pim identifiers to all data feeds
         if pim_results:
             pim_ids = {
@@ -49,11 +35,34 @@ async def search(
             }
         else:
             pim_ids = {}
+
+        p_info_results = await PInfo(
+            api_url = settings.P_INFO_API_URL,
+            api_key = settings.P_INFO_API_KEY
+            ).search(query=ean)
+        pi_error_msg = isinstance(p_info_results, dict) and p_info_results.get('error')
+        
+        if pi_error_msg:
+            p_info_results = pi_error_msg
+        
+        elif p_info_results:
+            p_info_results = [{**pim_ids, **shop} for shop in p_info_results]
+
+        icecat_results = await Icecat().search(query=ean)
+        eprel_id = icecat_results and icecat_results.get('EprelID')
+        eprel_results = eprel_id and await EPREL().search(query=eprel_id) or None
+        async with Crawlab(
+            settings.CRAWLAB_API_URL,
+            settings.CRAWLAB_API_KEY
+            ) as crawlab_client:
+            crawlab_results = await crawlab_client.search(query=ean)
+        paw_results = await Paw().search(query=ean)
+        
         response.append({
             'EAN': ean,
             'results': {
                 **{'internal_pim': pim_results},
-                **{'p_info': not pi_error_msg and p_info_results and [{**pim_ids, **shop} for shop in p_info_results] or pi_error_msg},
+                **{'p_info': p_info_results},
                 **{'icecat': icecat_results and {**pim_ids, **icecat_results}},
                 **{'crawlab': crawlab_results and {**pim_ids, **crawlab_results}},
                 **{'paw': paw_results and {**pim_ids, **paw_results}},

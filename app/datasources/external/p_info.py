@@ -1,5 +1,5 @@
-from json import JSONDecodeError
 from typing import Union, List
+from json import JSONDecodeError
 
 from fastapi.exceptions import HTTPException
 from httpx import AsyncClient
@@ -22,23 +22,19 @@ class PInfo(DataSource):
         async with self.session as client:
             try:
                 response = await client.get(f'{self.api_url}?gtin={query}')
-                try:
-                    json_body = response.json()
-                    resp_code = int(json_body['response']['code'])
-                    if resp_code not in (200, ):
-                        return []
-                        # raise HTTPException(status_code=resp_code)
-                except JSONDecodeError:
+                json_body = response.json()
+                resp_code = int(json_body['response']['code'])
+                if resp_code not in (200, ):
                     return []
-            except httpx.ReadTimeout:
-                return {'error': 'Unable to get data'}
+                    # raise HTTPException(status_code=resp_code)
+            except (httpx.ReadTimeout, JSONDecodeError):
+                return {'error': 'Unable to get data.'}
             
             articles = json_body['articles']
             result_set = [
                 src for src in articles if (src.get('specs_raw') \
                     and len([item for item in articles if item and item.get('specs_raw')]) > 1) \
-                        or src.get('description') \
-                    and src.get("shop") != "amazon.de" ## drop data from amazon.de
+                        or src.get('description')
                     ]
             flat_result_set = []
             for shop in result_set:
