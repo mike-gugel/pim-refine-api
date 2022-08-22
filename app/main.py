@@ -142,7 +142,8 @@ app.include_router(
         google_oauth_client,
         auth_backend,
         settings.SECRET_KEY,
-        associate_by_email=True
+        associate_by_email=True,
+        redirect_url=settings.GOOGLE_OAUTH_CALLBACK_REDIRECT_URL
         ),
     prefix="/auth/google",
     tags=["auth"],

@@ -42,6 +42,7 @@ class Settings(BaseSettings):
 
     GOOGLE_OAUTH_CLIENT_ID: str
     GOOGLE_OAUTH_CLIENT_SECRET: str
+    GOOGLE_OAUTH_CALLBACK_REDIRECT_URL: AnyHttpUrl = None
 
     POSTGRES_SERVER: str
     POSTGRES_USER: str
